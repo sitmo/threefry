@@ -376,10 +376,8 @@ int main(int argc, char*argv[])
   run(iter, "ranlux24", boost::ranlux3());
   run(iter, "ranlux48", boost::ranlux4());
 
-  run(iter, "threefry13", boost::threefry13());
-  run(iter, "threefry20", boost::threefry20());
-  run(iter, "threefry13_64", boost::threefry13_64());
-  run(iter, "threefry20_64", boost::threefry20_64());
+  run(iter, "threefry4x64_20", boost::random::threefry4x64_20());
+  run(iter, "threefry4x64_20_64", boost::random::threefry4x64_20_64());
 
   run(iter, "counting", counting());
 

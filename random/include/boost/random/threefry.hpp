@@ -26,6 +26,8 @@
 #include <boost/random/detail/seed.hpp>
 #include <boost/random/detail/seed_impl.hpp>
 
+#include <boost/utility/swap.hpp>
+
 namespace boost {
 namespace random {
 
@@ -36,7 +38,6 @@ namespace random {
 * The template parameter @p rounds should be 13 or 20
 *
 * @blockquote
-* engines:   Threefry-4×64, 13 and 20 rounds
 * title:     Parallel random numbers: as easy as 1, 2, 3
 * authors:   Salmon, John K. and Moraes, Mark A. and Dror, Ron O. and Shaw, David E.
 * booktitle: Proceedings of 2011 International Conference for High Performance Computing, Networking, Storage and Analysis
@@ -52,69 +53,121 @@ namespace random {
 * Output was verified against the threefry4x64 unit test cases from https://github.com/girving/random123/blob/master/examples/kat_vectors
 * @endxmlnote
 */
-template <typename UIntType,  std::size_t rounds=20>
-class threefry_engine
+namespace detail {
+
+    static const uint_least64_t threefry4x64_tweak = 0x1BD11BDAA9FC1A22;
+    static const uint_least8_t threefry4x64_rot0[] = {14, 52, 23,  5, 25, 46, 58, 32};
+    static const uint_least8_t threefry4x64_rot1[] = {16, 57, 40, 37, 33, 12, 22, 32};
+    
+    inline void threefry_rotl64(uint_least64_t& v, uint_least8_t shift) 
+    { v = (v << shift) | (v >> (64-shift)); }
+    
+    // primary template
+    template< typename UIntType, std::size_t w>
+    struct extract4x64_impl {
+        static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n);
+        static UIntType w_max();
+    };
+    
+    // specialisation
+    template< typename UIntType>
+    struct extract4x64_impl<UIntType,64> {
+        static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
+        { return _output[n]; }
+        static UIntType w_max()
+        { return 0xFFFFFFFFFFFFFFFF; }
+    };
+    template< typename UIntType>
+    struct extract4x64_impl<UIntType,32> {
+        static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
+        { return (_output[n>>1] >> (n&1)<<5) & 0xFFFFFFFF; }
+        static UIntType w_max()
+        { return 0xFFFFFFFF; }
+    };
+    template< typename UIntType>
+    struct extract4x64_impl<UIntType,16> {
+        static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
+        { return (_output[n>>2] >> (n&11)<<4) & 0xFFFF; }
+        static UIntType w_max()
+        { return 0xFFFF; }
+    };
+    template< typename UIntType>
+    struct extract4x64_impl<UIntType,8> {
+        static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
+        { return (_output[n>>3] >> (n&111)<<3) & 0xFF; }
+        static UIntType w_max()
+        { return 0xFF; }
+    };
+}
+
+template <  typename UIntType,      // the return type
+            std::size_t w,          // number of bits in the return type
+            std::size_t r=20        // number of rounds
+        >
+class threefry4x64_engine
 {
 public:
-    BOOST_STATIC_ASSERT( rounds==13 || rounds==20 );
+    BOOST_STATIC_ASSERT( w==8 || w==16 || w==32 || w==64 ); // otherwise we would need to patch multiple fragments from our 4x64 together
  
     /** The type of the generated random value. */
     typedef UIntType result_type;
-
+    BOOST_STATIC_CONSTANT(std::size_t, word_size = w);
+    BOOST_STATIC_CONSTANT(std::size_t, rounds = r);
     BOOST_STATIC_CONSTANT(bool, has_fixed_range = false);
-    BOOST_STATIC_CONSTANT(std::size_t, samples_per_block = 256/std::numeric_limits<UIntType>::digits);
 
+    BOOST_STATIC_CONSTANT(std::size_t, samples_per_block = 256/w);
 
+    
     /**
-     * @brief Constructs the defafult %threefry_engine.
+     * @brief Constructs the defafult %threefry4x64_engine.
      */
-    threefry_engine() 
+    threefry4x64_engine() 
     { seed(0); }
     
     /**
-     * @brief Constructs a %threefry_engine random number
+     * @brief Constructs a %threefry4x64_engine random number
      *        generator engine with seed @p value.  The default seed value
      *        is 0.
      *
      * @param value The initial seed value.
      */
-    BOOST_RANDOM_DETAIL_ARITHMETIC_CONSTRUCTOR(threefry_engine, UIntType, value)
+    BOOST_RANDOM_DETAIL_ARITHMETIC_CONSTRUCTOR(threefry4x64_engine, UIntType, value)
     { seed(value); }
     
     /**
-     * @brief Constructs a %threefry_engine and seed it
+     * @brief Constructs a %threefry4x64_engine and seed it
      * with values taken from the iterator range [@p first, @p last)
      * and adjusts first iterator to point to the element after the last one
      * used.  If there are not enough elements, throws @c std::invalid_argument.
      *
      * @p first and @p last must be input iterators.
      */
-    template<class It> threefry_engine(It& first, It last)
+    template<class It> threefry4x64_engine(It& first, It last)
     { seed(first,last); }
     
     /**
-     * @brief Constructs a %threefry_engine random number
+     * @brief Constructs a %threefry4x64_engine random number
      *        generator engine seeded from the seed sequence @p seq.
      *
      * @param seq the seed sequence.
      */
-    BOOST_RANDOM_DETAIL_SEED_SEQ_CONSTRUCTOR(threefry_engine, SeedSeq, seq)
+    BOOST_RANDOM_DETAIL_SEED_SEQ_CONSTRUCTOR(threefry4x64_engine, SeedSeq, seq)
     { seed(seq); }
 
     /**
-     * @brief Re-seed the %threefry_engine to it's default seed.
+     * @brief Re-seed the %threefry4x64_engine to it's default seed.
      */
     void seed()
     { seed(0); }
     
     /**
-     * @brief Re-seed the  %threefry_engine random number
+     * @brief Re-seed the  %threefry4x64_engine random number
      *        generator engine with the seed @p value.
      *        The default seed value is 0.
      *
      * @param value the new seed.
      */
-    BOOST_RANDOM_DETAIL_ARITHMETIC_SEED(threefry_engine, UIntType, value)
+    BOOST_RANDOM_DETAIL_ARITHMETIC_SEED(threefry4x64_engine, UIntType, value)
     {
         UIntType v = value;
         for (unsigned int i=0; i<4; ++i) {
@@ -128,19 +181,19 @@ public:
     }
 
     /**
-     * @brief Seeds the %threefry_engine random number
+     * @brief Seeds the %threefry4x64_engine random number
      *        generator engine with the seed sequence @p seq.
      *
      * @param seq the seed sequence.
      */
-    BOOST_RANDOM_DETAIL_SEED_SEQ_SEED(threefry_engine, SeeqSeq, seq)
+    BOOST_RANDOM_DETAIL_SEED_SEQ_SEED(threefry4x64_engine, SeeqSeq, seq)
     {
         detail::seed_array_int<64>(seq, _key);
         reset_after_key_change();
     }
 
     /**
-     * @brief Seed the %threefry_engine with values taken
+     * @brief Seed the %threefry4x64_engine with values taken
      * from the iterator range [@p first, @p last) and adjusts @p first to
      * point to the element after the last one used.  If there are
      * not enough elements, throws @c std::invalid_argument.
@@ -163,7 +216,7 @@ public:
      * @brief Gets the largest possible value in the output range.
      */
     static result_type max BOOST_PREVENT_MACRO_SUBSTITUTION ()
-    { return std::numeric_limits<UIntType>::max(); }
+    { return detail::extract4x64_impl<UIntType,w>::w_max(); }
 
 
     /**
@@ -173,14 +226,16 @@ public:
     {
         // can we return a value from the current block?
         if (_o_counter < samples_per_block)
-            return reinterpret_cast<result_type*>(_output)[_o_counter++];
+            return detail::extract4x64_impl<UIntType,w>::nth(_output, _o_counter++);
+            //return reinterpret_cast<result_type*>(_output)[_o_counter++];
 
         
         // generate a new block and return the first result_type 
         inc_counter();
         encrypt_counter();
         _o_counter = 1; // the next call
-        return *reinterpret_cast<result_type*>(_output);  // this call
+        return detail::extract4x64_impl<UIntType,w>::nth(_output, 0);
+        //return *reinterpret_cast<result_type*>(_output);  // this call
     }
 
     /**
@@ -219,40 +274,51 @@ public:
      *        @p _os.
      *
      * @param os  The output stream.
-     * @param eng A %threefry_engine random number generator.
+     * @param eng A %threefry4x64_engine random number generator.
      * @returns os.
      */
-   template<class CharT, class Traits>
-   friend std::basic_ostream<CharT, Traits>&
-   operator<<(std::basic_ostream<CharT, Traits>& os, const threefry_engine& eng) {
-       for (unsigned short i=0; i<4; ++i)
-           os << eng._key[i] << ' ' << eng._counter[i] << ' ' << eng._output[i] << ' ';
-       os << eng._o_counter;
-
+    template<class CharT, class Traits>
+    friend std::basic_ostream<CharT, Traits>&
+    operator<<(std::basic_ostream<CharT, Traits>& os, const threefry4x64_engine& eng)
+    {
+        for (unsigned short i=0; i<4; ++i)
+            os << eng._key[i] << ' ';
+            
+        for (unsigned short i=0; i<4; ++i)
+            os << eng._counter[i] << ' ';
+            
+        os << eng._o_counter;
        return os;
-   }
+    }
    
     /**
      * @brief reads the textual representation of the state x(i) from
      *        @p is.
      *
      * @param is  The input stream.
-     * @param eng A %threefry_engine random number generator.
+     * @param eng A %threefry4x64_engine random number generator.
      * @returns is.
      */
-   template<class CharT, class Traits>
-   friend std::basic_istream<CharT, Traits>&
-    operator >> (std::basic_istream<CharT, Traits>& is, threefry_engine& eng) {
+    template<class CharT, class Traits>
+    friend std::basic_istream<CharT, Traits>&
+    operator >> (std::basic_istream<CharT, Traits>& is, threefry4x64_engine& eng)
+    {
         for (unsigned short i=0; i<4; ++i) 
-           is >> eng._key[i] >> std::ws >> eng._counter[i] >> std::ws >> eng._output[i] >> std::ws;
+            is >> eng._key[i] >> std::ws;
+            
+        for (unsigned short i=0; i<4; ++i) 
+            is >> eng._counter[i] >> std::ws;
+            
         is >> eng._o_counter;
-        eng._keyx = 0x1BD11BDAA9FC1A22 ^ eng._key[0] ^ eng._key[1] ^ eng._key[2] ^ eng._key[3];
+        
+        eng._key[4] = detail::threefry4x64_tweak ^ eng._key[0] ^ eng._key[1] ^ eng._key[2] ^ eng._key[3];
+        eng.encrypt_counter();
         return is;
     } 
 #endif
 
     /**
-     * @brief Compares two %threefry_engine
+     * @brief Compares two %threefry4x64_engine
      * objects of the same type for equality.
      *
      *
@@ -263,7 +329,7 @@ public:
      *          would be equal, false otherwise.
      */
     friend bool 
-    operator==(const threefry_engine& _lhs, const threefry_engine& _rhs) 
+    operator==(const threefry4x64_engine& _lhs, const threefry4x64_engine& _rhs) 
     {
         if (_lhs._o_counter != _rhs._o_counter) return false;
         
@@ -286,155 +352,49 @@ public:
      *          would not be equal, false otherwise.
      */
     friend bool 
-    operator!=(const threefry_engine& _lhs, const threefry_engine& _rhs) 
+    operator!=(const threefry4x64_engine& _lhs, const threefry4x64_engine& _rhs) 
     { return !(_lhs == _rhs); }
-    
-    /**
-     * @brief Set the internal 256 bit key of the threefry engine, don't reset the counter.
-     *
-     * @param _k0 the first 64 bits of the key.
-     * @param _k1 the 2nd set of 64 bits of the key.
-     * @param _k2 the 3rd set of 64 bits of the key.
-     * @param _k3 the last 64 bits of the key.
-     */
-    void set_key(boost::uint64_t _k0=0, boost::uint64_t _k1=0, boost::uint64_t _k2=0, boost::uint64_t _k3=0)
-    {
-        _key[0] = _k0;
-        _key[1] = _k1;
-        _key[2] = _k2;
-        _key[3] = _k3;
-        _keyx = 0x1BD11BDAA9FC1A22 ^ _key[0] ^ _key[1] ^ _key[2] ^ _key[3];
-        encrypt_counter();
-    }
-    
-    /**
-     * @brief Set the internal 256 bit counter of the threefry engine.
-     *
-     * @param _s0 the first 64 bits of the counter.
-     * @param _s1 the 2nd set of 64 bits of the counter.
-     * @param _s2 the 3rd set of 64 bits of the counter.
-     * @param _s3 the last 64 bits of the counter.
-     * @param _o_counter the output counter  which specifies the current position in
-     *       the 256 bit block
-     */
-    void set_counter(boost::uint64_t _s0=0, boost::uint64_t _s1=0, boost::uint64_t _s2=0, boost::uint64_t _s3=0, unsigned short _o_counter=0)
-    {
-        _counter[0] = _s0; 
-        _counter[1] = _s1; 
-        _counter[2] = _s2; 
-        _counter[3] = _s3;
 
-        _o_counter = _o_counter % samples_per_block;
 
-        encrypt_counter();
-    }
-
-    /**
-     * @brief Set the internal 256 bit key and 256 bit counter of the threefry engine.
-     *
-     * @param _k0 the first 64 bits of the key.
-     * @param _k1 the 2nd set of 64 bits of the key.
-     * @param _k2 the 3rd set of 64 bits of the key.
-     * @param _k3 the last 64 bits of the key.
-     * @param _s0 the first 64 bits of the counter.
-     * @param _s1 the 2nd set of 64 bits of the counter.
-     * @param _s2 the 3rd set of 64 bits of the counter.
-     * @param _s3 the last 64 bits of the counter.
-     * @param _o_counter the output counter  which specifies the current position in
-     *       the 256 bit block
-     */
-    void set_key_and_counter(boost::uint64_t _k0=0, boost::uint64_t _k1=0, boost::uint64_t _k2=0, boost::uint64_t _k3=0,
-                             boost::uint64_t _s0=0, boost::uint64_t _s1=0, boost::uint64_t _s2=0, boost::uint64_t _s3=0, 
-                             unsigned short _o_counter=0)
-    {
-        _key[0] = _k0;
-        _key[1] = _k1;
-        _key[2] = _k2;
-        _key[3] = _k3;
-        _keyx = 0x1BD11BDAA9FC1A22 ^ _key[0] ^ _key[1] ^ _key[2] ^ _key[3];
-        _counter[0] = _s0; 
-        _counter[1] = _s1; 
-        _counter[2] = _s2; 
-        _counter[3] = _s3;
-        _o_counter = _o_counter % samples_per_block;
-
-        encrypt_counter();
-    }
-
-    
 private:
-    /// \cond show_private
 
-    
-    // double mixing function
-    void dmf(   boost::uint64_t& x0, boost::uint64_t& x1, boost::uint8_t rx,
-                boost::uint64_t& z0, boost::uint64_t& z1, boost::uint8_t rz)
-    {
-        x0 += x1;
-        z0 += z1;
-        x1 = (x1 << rx) | (x1 >> (64-rx));
-        z1 = (z1 << rz) | (z1 >> (64-rz));
-        x1 ^= x0;
-        z1 ^= z0;
-    }
-
-    // Double mixing function with key adition
-    void dmfk(  boost::uint64_t& x0, boost::uint64_t& x1, boost::uint8_t rx,
-                boost::uint64_t& z0, boost::uint64_t& z1, boost::uint8_t rz,
-                boost::uint64_t  k0, boost::uint64_t  k1, boost::uint64_t l0, boost::uint64_t l1)
-    {
-        x1 += k1;
-        z1 += l1;
-        x0 += x1 + k0;
-        z0 += z1 + l0;
-        x1 = (x1 << rx) | (x1 >> (64-rx));
-        z1 = (z1 << rz) | (z1 >> (64-rz));
-        x1 ^= x0;
-        z1 ^= z0;
-    }
- 
     // encrypt the couter with the key and store the result in the output buffer
     void encrypt_counter()
     {
 
-        for (unsigned short i=0; i<4; ++i) 
-            _output[i] = _counter[i];
+        // copy the counter to output
+        for (std::size_t i=0; i<4; ++i) 
+            _output[i] = _counter[i] + _key[i];
 
-        dmfk(_output[0], _output[1], 14,   _output[2], _output[3], 16,   _key[0], _key[1], _key[2], _key[3]);
-        dmf( _output[0], _output[3], 52,   _output[2], _output[1], 57);
-        dmf( _output[0], _output[1], 23,   _output[2], _output[3], 40);
-        dmf( _output[0], _output[3],  5,   _output[2], _output[1], 37);
-
-        dmfk(_output[0], _output[1], 25,   _output[2], _output[3], 33,   _key[1], _key[2], _key[3], _keyx + 1);
-        dmf( _output[0], _output[3], 46,   _output[2], _output[1], 12);
-        dmf( _output[0], _output[1], 58,   _output[2], _output[3], 22);
-        dmf( _output[0], _output[3], 32,   _output[2], _output[1], 32);
-
-        dmfk(_output[0], _output[1], 14,   _output[2], _output[3], 16,   _key[2], _key[3], _keyx, _key[0] + 2);
-        dmf( _output[0], _output[3], 52,   _output[2], _output[1], 57);
-        dmf( _output[0], _output[1], 23,   _output[2], _output[3], 40);
-        dmf( _output[0], _output[3],  5,   _output[2], _output[1], 37);
-
-        dmfk(_output[0], _output[1], 25,   _output[2], _output[3], 33,   _key[3], _keyx, _key[0], _key[1] + 3);        
+        uint_least8_t b0 = 1;
+        uint_least8_t b1 = 3;
+        uint_least8_t four_cycles = 0;
         
-        if (rounds>13)
-        {
-            dmf( _output[0], _output[3], 46,   _output[2], _output[1], 12);
-            dmf( _output[0], _output[1], 58,   _output[2], _output[3], 22);
-            dmf( _output[0], _output[3], 32,   _output[2], _output[1], 32);
+        for (std::size_t i=0; i<r; ++i) {
+            
+            _output[0] += _output[b0];
+            _output[2] += _output[b1];
+            
+            detail::threefry_rotl64( _output[b0], detail::threefry4x64_rot0[i % 8] );
+            detail::threefry_rotl64( _output[b1], detail::threefry4x64_rot1[i % 8] );
 
-            dmfk(_output[0], _output[1], 14,   _output[2], _output[3], 16,   _keyx, _key[0], _key[1], _key[2] + 4);
-            dmf( _output[0], _output[3], 52,   _output[2], _output[1], 57);
-            dmf( _output[0], _output[1], 23,   _output[2], _output[3], 40);
-            dmf( _output[0], _output[3],  5,   _output[2], _output[1], 37);
+            _output[b0] ^= _output[0];
+            _output[b1] ^= _output[2];
+            
+            if ( (i & 3) == 3 ) {
+                ++four_cycles;
 
-            for (unsigned int i=0; i<4; ++i)
-                _output[i] += _key[i];
-                
-            _output[3] += 5;
+                _output[0] += _key[ four_cycles    % 5];
+                _output[1] += _key[(four_cycles+1) % 5];
+                _output[2] += _key[(four_cycles+2) % 5];
+                _output[3] += _key[(four_cycles+3) % 5] + four_cycles;
+            }
+            
+            boost::swap(b0,b1);
         }
+        
     }
-    
+
     // increment the counter with 1
     void inc_counter()
     {
@@ -464,57 +424,46 @@ private:
         }
         _counter[0] += z;
     }
-
-    // reset the counter to zero, and reset the keyx
-    void reset_after_key_change()
+    
+    void reset_counter()
     {
-        _keyx = 0x1BD11BDAA9FC1A22 ^ _key[0] ^ _key[1] ^ _key[2] ^ _key[3];
         _counter[0] = 0;
         _counter[1] = 0;
         _counter[2] = 0;
         _counter[3] = 0;
         _o_counter = 0;
+    }
+
+    // reset the counter to zero, and reset the keyx
+    void reset_after_key_change()
+    {
+        _key[4] = detail::threefry4x64_tweak ^ _key[0] ^ _key[1] ^ _key[2] ^ _key[3];
+        reset_counter();
         encrypt_counter();
     }
     
 private:
-    boost::uint64_t _key[4];       // the 256 bit encryption key
-    boost::uint64_t _keyx;
-    boost::uint64_t _counter[4];   // the 256 bit counter (message) that gets encrypted
-    boost::uint64_t _output[4];    // the 256 bit cipher output 4 * 64 bit = 256 bit output
-    boost::uint16_t _o_counter;     // output chunk counter, e.g. for a 64 bit random engine
-                            // the 256 bit output buffer gets split in 4 chunks.
+    boost::uint_least64_t _key[5];       // the 256 bit encryption key
+    boost::uint_least64_t _counter[4];   // the 256 bit counter (message) that gets encrypted
+    boost::uint_least64_t _output[4];    // the 256 bit cipher output 4 * 64 bit = 256 bit output
+    boost::uint_least16_t _o_counter;     // output chunk counter, e.g. for a 64 bit random engine
+                            // the 256 bit output buffer gets split in 4x64bit chunks or 8x32bit chunks chunks.
     /// \endcond
 
 };
 
 /**
- * 32 bit version of the 13 rounds threefry engine
- */
-typedef threefry_engine<boost::uint32_t, 13> threefry13;
-
-/**
  * 32 bit version of the 20 rounds threefry engine
  */
- 
-typedef threefry_engine<boost::uint32_t, 20> threefry20;
-
-/**
- * 64 bit version of the 13 rounds threefry engine
- */
-typedef threefry_engine<boost::uint64_t, 13> threefry13_64;
+typedef threefry4x64_engine<boost::uint32_t, 32, 20> threefry4x64_20;
 
 /**
  * 64 bit version of the 20 rounds threefry engine
  */
-typedef threefry_engine<boost::uint64_t, 20> threefry20_64;
+typedef threefry4x64_engine<boost::uint64_t, 64, 20> threefry4x64_20_64;
 
 } // namespace random
 
-using random::threefry13;
-using random::threefry20;
-using random::threefry13_64;
-using random::threefry20_64;
 
 } // namespace boost
 
