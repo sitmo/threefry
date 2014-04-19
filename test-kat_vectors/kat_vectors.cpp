@@ -33,6 +33,90 @@ These test cases are taken from: https://github.com/girving/random123/blob/maste
 #include <boost/test/included/unit_test.hpp>
 #include <boost/random/threefry.hpp>
 
+BOOST_AUTO_TEST_CASE( threefry13_8_00 )
+{
+    boost::random::threefry4x64_engine<boost::uint32_t, 8, 13> eng;
+
+    std::istringstream is("0 0 0 0 0 0 0 0 0");
+    is >> eng;
+
+    BOOST_CHECK_EQUAL( eng(), 0x05 );
+    BOOST_CHECK_EQUAL( eng(), 0x8e );
+    BOOST_CHECK_EQUAL( eng(), 0xdc );
+    BOOST_CHECK_EQUAL( eng(), 0xe1 );
+    BOOST_CHECK_EQUAL( eng(), 0xbe );
+    BOOST_CHECK_EQUAL( eng(), 0xfa );
+    BOOST_CHECK_EQUAL( eng(), 0x71 );
+    BOOST_CHECK_EQUAL( eng(), 0x40 );
+    BOOST_CHECK_EQUAL( eng(), 0x62 );
+    BOOST_CHECK_EQUAL( eng(), 0x9c );
+    BOOST_CHECK_EQUAL( eng(), 0x5c );
+    BOOST_CHECK_EQUAL( eng(), 0x69 );
+    BOOST_CHECK_EQUAL( eng(), 0x13 );
+    BOOST_CHECK_EQUAL( eng(), 0x31 );
+    BOOST_CHECK_EQUAL( eng(), 0xed );
+    BOOST_CHECK_EQUAL( eng(), 0x02 );
+    BOOST_CHECK_EQUAL( eng(), 0x49 );
+    BOOST_CHECK_EQUAL( eng(), 0x9d );
+    BOOST_CHECK_EQUAL( eng(), 0x9f );
+    BOOST_CHECK_EQUAL( eng(), 0xb8 );
+    BOOST_CHECK_EQUAL( eng(), 0xb5 );
+    BOOST_CHECK_EQUAL( eng(), 0x11 );
+    BOOST_CHECK_EQUAL( eng(), 0x73 );
+    BOOST_CHECK_EQUAL( eng(), 0x39 );
+    BOOST_CHECK_EQUAL( eng(), 0xbc );
+    BOOST_CHECK_EQUAL( eng(), 0x24 );
+    BOOST_CHECK_EQUAL( eng(), 0x80 );
+    BOOST_CHECK_EQUAL( eng(), 0x25 );
+    BOOST_CHECK_EQUAL( eng(), 0xc3 );
+    BOOST_CHECK_EQUAL( eng(), 0x92 );
+    BOOST_CHECK_EQUAL( eng(), 0x12 );
+    BOOST_CHECK_EQUAL( eng(), 0xe2 );
+}
+
+BOOST_AUTO_TEST_CASE( threefry13_16_00 )
+{
+    boost::random::threefry4x64_engine<boost::uint32_t, 16, 13> eng;
+
+    std::istringstream is("0 0 0 0 0 0 0 0 0");
+    is >> eng;
+
+    BOOST_CHECK_EQUAL( eng(), 0x8e05 );
+    BOOST_CHECK_EQUAL( eng(), 0xe1dc );
+    BOOST_CHECK_EQUAL( eng(), 0xfabe );
+    BOOST_CHECK_EQUAL( eng(), 0x4071 );
+    BOOST_CHECK_EQUAL( eng(), 0x9c62 );
+    BOOST_CHECK_EQUAL( eng(), 0x695c );
+    BOOST_CHECK_EQUAL( eng(), 0x3113 );
+    BOOST_CHECK_EQUAL( eng(), 0x02ed );
+    BOOST_CHECK_EQUAL( eng(), 0x9d49 );
+    BOOST_CHECK_EQUAL( eng(), 0xb89f );
+    BOOST_CHECK_EQUAL( eng(), 0x11b5 );
+    BOOST_CHECK_EQUAL( eng(), 0x3973 );
+    BOOST_CHECK_EQUAL( eng(), 0x24bc );
+    BOOST_CHECK_EQUAL( eng(), 0x2580 );
+    BOOST_CHECK_EQUAL( eng(), 0x92c3 );
+    BOOST_CHECK_EQUAL( eng(), 0xe212 );
+}
+
+BOOST_AUTO_TEST_CASE( threefry13_32_00 )
+{
+    boost::random::threefry4x64_engine<boost::uint32_t, 32, 13> eng;
+
+    std::istringstream is("0 0 0 0 0 0 0 0 0");
+    is >> eng;
+
+    BOOST_CHECK_EQUAL( eng(), 0xe1dc8e05 );
+    BOOST_CHECK_EQUAL( eng(), 0x4071fabe );
+    BOOST_CHECK_EQUAL( eng(), 0x695c9c62 );
+    BOOST_CHECK_EQUAL( eng(), 0x02ed3113 );
+    BOOST_CHECK_EQUAL( eng(), 0xb89f9d49 );
+    BOOST_CHECK_EQUAL( eng(), 0x397311b5 );
+    BOOST_CHECK_EQUAL( eng(), 0x258024bc );
+    BOOST_CHECK_EQUAL( eng(), 0xe21292c3 );
+}
+
+
 BOOST_AUTO_TEST_CASE( threefry13_64_00 )
 {
     boost::random::threefry4x64_engine<boost::uint64_t, 64, 13> eng;

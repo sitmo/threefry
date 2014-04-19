@@ -80,21 +80,21 @@ namespace detail {
     template< typename UIntType>
     struct extract4x64_impl<UIntType,32> {
         static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
-        { return (_output[n>>1] >> (n&1)<<5) & 0xFFFFFFFF; }
+        { return (_output[n>>1] >> ((n&1)<<5)) & 0xFFFFFFFF; }
         static UIntType w_max()
         { return 0xFFFFFFFF; }
     };
     template< typename UIntType>
     struct extract4x64_impl<UIntType,16> {
         static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
-        { return (_output[n>>2] >> (n&11)<<4) & 0xFFFF; }
+        { return (_output[n>>2] >> ((n&11)<<4)) & 0xFFFF; }
         static UIntType w_max()
         { return 0xFFFF; }
     };
     template< typename UIntType>
     struct extract4x64_impl<UIntType,8> {
         static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
-        { return (_output[n>>3] >> (n&111)<<3) & 0xFF; }
+        { return (_output[n>>3] >> ((n&111)<<3)) & 0xFF; }
         static UIntType w_max()
         { return 0xFF; }
     };
