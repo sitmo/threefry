@@ -56,9 +56,7 @@ namespace random {
 namespace detail {
 
     static const uint_least64_t threefry4x64_tweak = 0x1BD11BDAA9FC1A22;
-    static const uint_least8_t threefry4x64_rot0[] = {14, 52, 23,  5, 25, 46, 58, 32};
-    static const uint_least8_t threefry4x64_rot1[] = {16, 57, 40, 37, 33, 12, 22, 32};
-    
+
     inline void threefry_rotl64(uint_least64_t& v, uint_least8_t shift) 
     { v = (v << shift) | (v >> (64-shift)); }
     
@@ -358,41 +356,119 @@ public:
 
 private:
 
-    // encrypt the couter with the key and store the result in the output buffer
+    inline void rotl64(boost::uint_least64_t& v, const boost::uint8_t bits) const
+    { 
+        v = (v << bits) | (v >> (64-bits)); 
+    }
+    
+    inline void mix64(boost::uint_least64_t& x0, boost::uint64_t& x1, const boost::uint8_t bits) const
+    {
+        x0 += x1;
+        rotl64(x1, bits);
+        x1 ^= x0;
+    }
+
+    inline void double_mix64(   boost::uint_least64_t& x0, boost::uint_least64_t& x1, const boost::uint8_t rx,
+                                boost::uint_least64_t& z0, boost::uint_least64_t& z1, const boost::uint8_t rz) const
+    {
+        mix64(x0,x1,rx);
+        mix64(z0,z1,rz);
+    }
+
+
+    // 9.2 CPU cycles (32bit), 14.1 CPU cycles (64bit)
     void encrypt_counter()
     {
-
         // copy the counter to output
-        for (std::size_t i=0; i<4; ++i) 
+        for (std::size_t i=0; i<4; ++i)
             _output[i] = _counter[i] + _key[i];
 
-        uint_least8_t b0 = 1;
-        uint_least8_t b1 = 3;
-        uint_least8_t four_cycles = 0;
+        double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r <= 1) return;
+        double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r <= 2) return;
+        double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r <= 3) return;
+        double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
+
+        _output[0] += _key[1];
+        _output[1] += _key[2];
+        _output[2] += _key[3];
+        _output[3] += _key[4];
+        _output[3] += 1;
+         if (r <= 4) return;
+         
+        double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (r <= 5) return;
+        double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (r <= 6) return;
+        double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (r <= 7) return;
+        double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
         
-        for (std::size_t i=0; i<r; ++i) {
-            
-            _output[0] += _output[b0];
-            _output[2] += _output[b1];
-            
-            detail::threefry_rotl64( _output[b0], detail::threefry4x64_rot0[i % 8] );
-            detail::threefry_rotl64( _output[b1], detail::threefry4x64_rot1[i % 8] );
+        _output[0] += _key[2];
+        _output[1] += _key[3];
+        _output[2] += _key[4];
+        _output[3] += _key[0];
+        _output[3] += 2;
+         if (r <= 8) return;
+         
+        double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r <= 9) return;
+        double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r <= 10) return;
+        double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r <= 11) return;
+        double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
+        
+        _output[0] += _key[3];
+        _output[1] += _key[4];
+        _output[2] += _key[0];
+        _output[3] += _key[1];
+        _output[3] += 3;
+         if (r <= 12) return;
+         
+        double_mix64( _output[0], _output[1], 25,  _output[2], _output[3], 33);  if (r <= 13) return;
+        double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (r <= 14) return;
+        double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (r <= 15) return;
+        double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
+    
+        _output[0] += _key[4];
+        _output[1] += _key[0];
+        _output[2] += _key[1];
+        _output[3] += _key[2];
+        _output[3] +=  4;
+         if (r <= 16) return;
+         
+        double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r <= 17) return;
+        double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r <= 18) return;
+        double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r <= 19) return;
+        double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
 
-            _output[b0] ^= _output[0];
-            _output[b1] ^= _output[2];
-            
-            if ( (i & 3) == 3 ) {
-                ++four_cycles;
+        _output[0] += _key[0];
+        _output[1] += _key[1];
+        _output[2] += _key[2];
+        _output[3] += _key[3];
+        _output[3] += 5;
 
-                _output[0] += _key[ four_cycles    % 5];
-                _output[1] += _key[(four_cycles+1) % 5];
-                _output[2] += _key[(four_cycles+2) % 5];
-                _output[3] += _key[(four_cycles+3) % 5] + four_cycles;
-            }
+    }
+    
+    // 23.4 CPU cycles (32bit), 42.7 CPU cycles (64bit)
+    void encrypt_counter_2()
+    {
+        static const uint_least8_t rot0[] = {14, 52, 23,  5, 25, 46, 58, 32};
+        static const uint_least8_t rot1[] = {16, 57, 40, 37, 33, 12, 22, 32};
+        
+        for (std::size_t i=0; i<4; ++i)
+            _output[i] = _counter[i] + _key[i];
             
-            boost::swap(b0,b1);
+        std::size_t four_cycles = 0;
+        
+        for (std::size_t i=0; i<r; ++i)
+        {
+            double_mix64( _output[0], _output[1], rot0[i&7], _output[2], _output[3], rot1[i&7]); if (++i>=r) return;
+            double_mix64( _output[0], _output[3], rot0[i&7], _output[2], _output[1], rot1[i&7]); if (++i>=r) return;
+            double_mix64( _output[0], _output[1], rot0[i&7], _output[2], _output[3], rot1[i&7]); if (++i>=r) return;
+            double_mix64( _output[0], _output[3], rot0[i&7], _output[2], _output[1], rot1[i&7]);
+            
+            ++four_cycles;
+            _output[0] += _key[ four_cycles    % 5];
+            _output[1] += _key[(four_cycles+1) % 5];
+            _output[2] += _key[(four_cycles+2) % 5];
+            _output[3] += _key[(four_cycles+3) % 5];
+            _output[3] += four_cycles;
         }
-        
     }
 
     // increment the counter with 1
