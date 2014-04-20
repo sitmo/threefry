@@ -24,6 +24,10 @@ These test cases are taken from: https://github.com/girving/random123/blob/maste
 #threefry4x64 20 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 09218ebde6c85537 55941f5266d86105 4bd25e16282434dc ee29ec846bd2e40b
 #threefry4x64 20 ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff 29c24097942bba1b 0371bbfb0f6f4e11 3c231ffa33f83a1c cd29113fde32d168
 #threefry4x64 20 243f6a8885a308d3 13198a2e03707344 a4093822299f31d0 082efa98ec4e6c89 452821e638d01377 be5466cf34e90c6c be5466cf34e90c6c c0ac29b7c97c50dd a7e8fde591651bd9 baafd0c30138319b 84a5c1a729e685b9 901d406ccebc1ba4
+#threefry4x64 72 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 94eeea8b1f2ada84 adf103313eae6670 952419a1f4b16d53 d83f13e63c9f6b11
+#threefry4x64 72 ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff 11518c034bc1ff4c 193f10b8bcdcc9f7 d024229cb58f20d8 563ed6e48e05183f
+#threefry4x64 72 243f6a8885a308d3 13198a2e03707344 a4093822299f31d0 082efa98ec4e6c89 452821e638d01377 be5466cf34e90c6c be5466cf34e90c6c c0ac29b7c97c50dd acf412ccaa3b2270 c9e99bd53f2e9173 43dad469dc825948 fbb19d06c8a2b4dc
+
 */
 
 #define BOOST_TEST_MODULE threefry
@@ -33,7 +37,7 @@ These test cases are taken from: https://github.com/girving/random123/blob/maste
 #include <boost/test/included/unit_test.hpp>
 #include <boost/random/threefry.hpp>
 
-BOOST_AUTO_TEST_CASE( threefry13_8_00 )
+BOOST_AUTO_TEST_CASE( threefry4x64_13_8 )
 {
     boost::random::threefry4x64_engine<boost::uint32_t, 8, 13> eng;
 
@@ -74,7 +78,7 @@ BOOST_AUTO_TEST_CASE( threefry13_8_00 )
     BOOST_CHECK_EQUAL( eng(), 0xe2 );
 }
 
-BOOST_AUTO_TEST_CASE( threefry13_16_00 )
+BOOST_AUTO_TEST_CASE( threefry4x64_13_16 )
 {
     boost::random::threefry4x64_engine<boost::uint32_t, 16, 13> eng;
 
@@ -99,7 +103,7 @@ BOOST_AUTO_TEST_CASE( threefry13_16_00 )
     BOOST_CHECK_EQUAL( eng(), 0xe212 );
 }
 
-BOOST_AUTO_TEST_CASE( threefry13_32_00 )
+BOOST_AUTO_TEST_CASE( threefry4x64_13_32 )
 {
     boost::random::threefry4x64_engine<boost::uint32_t, 32, 13> eng;
 
@@ -117,7 +121,7 @@ BOOST_AUTO_TEST_CASE( threefry13_32_00 )
 }
 
 
-BOOST_AUTO_TEST_CASE( threefry13_64_00 )
+BOOST_AUTO_TEST_CASE( threefry4x64_13_64_0x00 )
 {
     boost::random::threefry4x64_engine<boost::uint64_t, 64, 13> eng;
 
@@ -130,7 +134,7 @@ BOOST_AUTO_TEST_CASE( threefry13_64_00 )
     BOOST_CHECK_EQUAL( eng(), 0xe21292c3258024bc );
 }
 
-BOOST_AUTO_TEST_CASE( threefry13_64_ff )
+BOOST_AUTO_TEST_CASE(  threefry4x64_13_64_0xff )
 {
     boost::random::threefry4x64_engine<boost::uint64_t, 64, 13> eng;
 
@@ -146,7 +150,7 @@ BOOST_AUTO_TEST_CASE( threefry13_64_ff )
     BOOST_CHECK_EQUAL( eng(), 0x627ed0d746821121 );
 }
 
-BOOST_AUTO_TEST_CASE( threefry13_64_24 )
+BOOST_AUTO_TEST_CASE(  threefry4x64_13_64_0x45 )
 {
     boost::random::threefry4x64_engine<boost::uint64_t, 64, 13> eng;
 
@@ -164,7 +168,7 @@ BOOST_AUTO_TEST_CASE( threefry13_64_24 )
 
 
 
-BOOST_AUTO_TEST_CASE( threefry20_64_00 )
+BOOST_AUTO_TEST_CASE( threefry4x64_20_64_0x00 )
 {
     boost::random::threefry4x64_engine<boost::uint64_t, 64, 20> eng;
 
@@ -177,7 +181,7 @@ BOOST_AUTO_TEST_CASE( threefry20_64_00 )
     BOOST_CHECK_EQUAL( eng(), 0xee29ec846bd2e40b );
 }
 
-BOOST_AUTO_TEST_CASE( threefry20_64_ff )
+BOOST_AUTO_TEST_CASE( threefry4x64_20_64_0xff )
 {
     boost::random::threefry4x64_engine<boost::uint64_t, 64, 20> eng;
     
@@ -193,7 +197,7 @@ BOOST_AUTO_TEST_CASE( threefry20_64_ff )
     BOOST_CHECK_EQUAL( eng(), 0xcd29113fde32d168 );
 }
 
-BOOST_AUTO_TEST_CASE( threefry20_64_24 )
+BOOST_AUTO_TEST_CASE( threefry4x64_20_64_0x45 )
 {
     boost::random::threefry4x64_engine<boost::uint64_t, 64, 20> eng;
 
@@ -207,4 +211,52 @@ BOOST_AUTO_TEST_CASE( threefry20_64_24 )
     BOOST_CHECK_EQUAL( eng(), 0xbaafd0c30138319b );
     BOOST_CHECK_EQUAL( eng(), 0x84a5c1a729e685b9 );
     BOOST_CHECK_EQUAL( eng(), 0x901d406ccebc1ba4 );
+}
+
+
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_0x00 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng;
+
+    std::istringstream is("0 0 0 0 0 0 0 0 0");
+    is >> eng;
+    
+    BOOST_CHECK_EQUAL( eng(), 0x94eeea8b1f2ada84 );
+    BOOST_CHECK_EQUAL( eng(), 0xadf103313eae6670 );
+    BOOST_CHECK_EQUAL( eng(), 0x952419a1f4b16d53 );
+    BOOST_CHECK_EQUAL( eng(), 0xd83f13e63c9f6b11 );
+}
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_0xff )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng;
+    
+    std::ostringstream os;
+    os << 0xffffffffffffffff << ' ' << 0xffffffffffffffff << ' ' << 0xffffffffffffffff << ' ' << 0xffffffffffffffff << ' '
+       << 0xffffffffffffffff << ' ' << 0xffffffffffffffff << ' ' << 0xffffffffffffffff << ' ' << 0xffffffffffffffff << ' ' << 0;
+    std::istringstream is( os.str() );
+    is >> eng;
+        
+    BOOST_CHECK_EQUAL( eng(), 0x11518c034bc1ff4c );
+    BOOST_CHECK_EQUAL( eng(), 0x193f10b8bcdcc9f7 );
+    BOOST_CHECK_EQUAL( eng(), 0xd024229cb58f20d8 );
+    BOOST_CHECK_EQUAL( eng(), 0x563ed6e48e05183f );
+}
+
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_0x45 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng;
+
+    std::ostringstream os;
+    os << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xc0ac29b7c97c50dd << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0x082efa98ec4e6c89 << ' ' << 0;
+    std::istringstream is( os.str() );
+    is >> eng;
+
+    BOOST_CHECK_EQUAL( eng(), 0xacf412ccaa3b2270 );
+    BOOST_CHECK_EQUAL( eng(), 0xc9e99bd53f2e9173 );
+    BOOST_CHECK_EQUAL( eng(), 0x43dad469dc825948 );
+    BOOST_CHECK_EQUAL( eng(), 0xfbb19d06c8a2b4dc );
 }

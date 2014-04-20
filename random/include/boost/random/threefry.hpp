@@ -387,7 +387,7 @@ private:
         for (std::size_t i=0; i<4; ++i)
             _output[i] = _counter[i] + _key[i];
 
-        for (int round = 0; round < r; ++round)
+        for (int round = 0; round < r;)
         {
             double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
             double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
@@ -457,6 +457,7 @@ private:
             double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
             double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
             add_key64_t<0>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
 
         }
 
