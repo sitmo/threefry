@@ -56,44 +56,41 @@ namespace random {
 namespace detail {
 
     static const uint_least64_t threefry4x64_tweak = 0x1BD11BDAA9FC1A22;
-
-    inline void threefry_rotl64(uint_least64_t& v, uint_least8_t shift) 
-    { v = (v << shift) | (v >> (64-shift)); }
     
     // primary template
     template< typename UIntType, std::size_t w>
     struct extract4x64_impl {
-        static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n);
-        static UIntType w_max();
+        inline static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n);
+        inline static UIntType w_max();
     };
     
     // specialisation
     template< typename UIntType>
     struct extract4x64_impl<UIntType,64> {
-        static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
+        inline static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
         { return _output[n]; }
-        static UIntType w_max()
+        inline static UIntType w_max()
         { return 0xFFFFFFFFFFFFFFFF; }
     };
     template< typename UIntType>
     struct extract4x64_impl<UIntType,32> {
-        static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
+        inline static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
         { return (_output[n>>1] >> ((n&1)<<5)) & 0xFFFFFFFF; }
-        static UIntType w_max()
+        inline static UIntType w_max()
         { return 0xFFFFFFFF; }
     };
     template< typename UIntType>
     struct extract4x64_impl<UIntType,16> {
-        static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
+        inline static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
         { return (_output[n>>2] >> ((n&11)<<4)) & 0xFFFF; }
-        static UIntType w_max()
+        inline static UIntType w_max()
         { return 0xFFFF; }
     };
     template< typename UIntType>
     struct extract4x64_impl<UIntType,8> {
-        static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
+        inline static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
         { return (_output[n>>3] >> ((n&111)<<3)) & 0xFF; }
-        static UIntType w_max()
+        inline static UIntType w_max()
         { return 0xFF; }
     };
 }
@@ -355,7 +352,6 @@ public:
 
 
 private:
-
     inline void rotl64(boost::uint_least64_t& v, const boost::uint8_t bits) const
     { 
         v = (v << bits) | (v >> (64-bits)); 
@@ -375,114 +371,104 @@ private:
         mix64(z0,z1,rz);
     }
 
+    template <std::size_t offset>
+    inline void add_key64_t( boost::uint_least64_t (&output)[4], boost::uint_least64_t (&key)[5], const std::size_t c) const
+    {
+        output[0] += key[ offset   %5];
+        output[1] += key[(offset+1)%5];
+        output[2] += key[(offset+2)%5];
+        output[3] += key[(offset+3)%5];
+        output[3] += c;
+    }
 
-    // 9.2 CPU cycles (32bit), 14.1 CPU cycles (64bit)
     void encrypt_counter()
     {
         // copy the counter to output
         for (std::size_t i=0; i<4; ++i)
             _output[i] = _counter[i] + _key[i];
 
-        double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r <= 1) return;
-        double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r <= 2) return;
-        double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r <= 3) return;
-        double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
-
-        _output[0] += _key[1];
-        _output[1] += _key[2];
-        _output[2] += _key[3];
-        _output[3] += _key[4];
-        _output[3] += 1;
-         if (r <= 4) return;
-         
-        double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (r <= 5) return;
-        double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (r <= 6) return;
-        double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (r <= 7) return;
-        double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
-        
-        _output[0] += _key[2];
-        _output[1] += _key[3];
-        _output[2] += _key[4];
-        _output[3] += _key[0];
-        _output[3] += 2;
-         if (r <= 8) return;
-         
-        double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r <= 9) return;
-        double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r <= 10) return;
-        double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r <= 11) return;
-        double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
-        
-        _output[0] += _key[3];
-        _output[1] += _key[4];
-        _output[2] += _key[0];
-        _output[3] += _key[1];
-        _output[3] += 3;
-         if (r <= 12) return;
-         
-        double_mix64( _output[0], _output[1], 25,  _output[2], _output[3], 33);  if (r <= 13) return;
-        double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (r <= 14) return;
-        double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (r <= 15) return;
-        double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
-    
-        _output[0] += _key[4];
-        _output[1] += _key[0];
-        _output[2] += _key[1];
-        _output[3] += _key[2];
-        _output[3] +=  4;
-         if (r <= 16) return;
-         
-        double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r <= 17) return;
-        double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r <= 18) return;
-        double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r <= 19) return;
-        double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
-
-        _output[0] += _key[0];
-        _output[1] += _key[1];
-        _output[2] += _key[2];
-        _output[3] += _key[3];
-        _output[3] += 5;
-
-    }
-    
-    // 23.4 CPU cycles (32bit), 42.7 CPU cycles (64bit)
-    void encrypt_counter_2()
-    {
-        static const uint_least8_t rot0[] = {14, 52, 23,  5, 25, 46, 58, 32};
-        static const uint_least8_t rot1[] = {16, 57, 40, 37, 33, 12, 22, 32};
-        
-        for (std::size_t i=0; i<4; ++i)
-            _output[i] = _counter[i] + _key[i];
-            
-        std::size_t four_cycles = 0;
-        
-        for (std::size_t i=0; i<r; ++i)
+        for (int round = 0; round < r; ++round)
         {
-            double_mix64( _output[0], _output[1], rot0[i&7], _output[2], _output[3], rot1[i&7]); if (++i>=r) return;
-            double_mix64( _output[0], _output[3], rot0[i&7], _output[2], _output[1], rot1[i&7]); if (++i>=r) return;
-            double_mix64( _output[0], _output[1], rot0[i&7], _output[2], _output[3], rot1[i&7]); if (++i>=r) return;
-            double_mix64( _output[0], _output[3], rot0[i&7], _output[2], _output[1], rot1[i&7]);
-            
-            ++four_cycles;
-            _output[0] += _key[ four_cycles    % 5];
-            _output[1] += _key[(four_cycles+1) % 5];
-            _output[2] += _key[(four_cycles+2) % 5];
-            _output[3] += _key[(four_cycles+3) % 5];
-            _output[3] += four_cycles;
-        }
-    }
+            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
+            double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
+            add_key64_t<1>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
+         
+            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
+            add_key64_t<2>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
 
+            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
+            double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
+            add_key64_t<3>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
+         
+            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
+            add_key64_t<4>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
+
+            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
+            double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
+            add_key64_t<0>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
+         
+            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
+            add_key64_t<1>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
+
+            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
+            double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
+            add_key64_t<2>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
+         
+            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
+            add_key64_t<3>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
+
+            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
+            double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
+            add_key64_t<4>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
+         
+            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
+            add_key64_t<0>(_output, _key, (++round)>>2 );
+            if (round >= r) return;
+
+        }
+
+    }
+    
     // increment the counter with 1
     void inc_counter()
     {
-        ++_counter[0]; 
-        if (_counter[0] != 0) return;
-        
-        ++_counter[1]; 
-        if (_counter[1] != 0) return;
-        
-        ++_counter[2]; 
-        if (_counter[2] != 0) return;
-        
+        ++_counter[0]; if (_counter[0] != 0) return;
+        ++_counter[1]; if (_counter[1] != 0) return;
+        ++_counter[2]; if (_counter[2] != 0) return;
         ++_counter[3];
     }
     
@@ -507,7 +493,7 @@ private:
         _counter[1] = 0;
         _counter[2] = 0;
         _counter[3] = 0;
-        _o_counter = 0;
+        _o_counter  = 0;
     }
 
     // reset the counter to zero, and reset the keyx
@@ -519,14 +505,25 @@ private:
     }
     
 private:
+
     boost::uint_least64_t _key[5];       // the 256 bit encryption key
     boost::uint_least64_t _counter[4];   // the 256 bit counter (message) that gets encrypted
     boost::uint_least64_t _output[4];    // the 256 bit cipher output 4 * 64 bit = 256 bit output
     boost::uint_least16_t _o_counter;     // output chunk counter, e.g. for a 64 bit random engine
                             // the 256 bit output buffer gets split in 4x64bit chunks or 8x32bit chunks chunks.
     /// \endcond
-
 };
+
+/**
+ * 32 bit version of the 13 rounds threefry engine
+ */
+typedef threefry4x64_engine<boost::uint32_t, 32, 13> threefry4x64_13;
+
+/**
+ * 64 bit version of the 13 rounds threefry engine
+ */
+typedef threefry4x64_engine<boost::uint64_t, 64, 13> threefry4x64_13_64;
+
 
 /**
  * 32 bit version of the 20 rounds threefry engine
