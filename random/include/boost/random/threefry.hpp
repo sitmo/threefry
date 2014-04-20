@@ -389,75 +389,74 @@ private:
 
         for (int round = 0; round < r; ++round)
         {
-            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r<=1) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r<=2) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r<=3) return; else if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
             double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
             add_key64_t<1>(_output, _key, (++round)>>2 );
-            if (r<=4) return; else if (round >= r) return;
+            if (round >= r) return;
          
-            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (r<=5) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (r<=6) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (r<=7) return; else if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
             double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
             add_key64_t<2>(_output, _key, (++round)>>2 );
-            if (r<=8) return; else if (round >= r) return;
+            if (round >= r) return;
 
-            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r<=9) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r<=10) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r<=11) return; else if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
             double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
             add_key64_t<3>(_output, _key, (++round)>>2 );
-            if (r<=12) return; else if (round >= r) return;
-         
-            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (r<=13) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (r<=14) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (r<=15) return; else if (++round >= r) return;
+            if (round >= r) return;
+
+            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
             double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
             add_key64_t<4>(_output, _key, (++round)>>2 );
-            if (r<=16) return; else if (round >= r) return;
+            if (round >= r) return;
 
-            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r<=17) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r<=18) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r<=19) return; else if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
             double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
             add_key64_t<0>(_output, _key, (++round)>>2 );
-            if (r<=20) return; else if (round >= r) return;
+            if (round >= r) return;
          
-            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (r<=21) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (r<=22) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (r<=23) return; else if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
             double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
             add_key64_t<1>(_output, _key, (++round)>>2 );
-            if (r<=24) return; else if (round >= r) return;
+            if (round >= r) return;
 
-            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r<=25) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r<=26) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r<=27) return; else if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
             double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
             add_key64_t<2>(_output, _key, (++round)>>2 );
-            if (r<=28) return; else if (round >= r) return;
+            if (round >= r) return;
          
-            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (r<=29) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (r<=30) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (r<=31) return; else if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
             double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
             add_key64_t<3>(_output, _key, (++round)>>2 );
-            if (r<=32) return; else if (round >= r) return;
+            if (round >= r) return;
 
-            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (r<=33) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (r<=34) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (r<=35) return; else if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
             double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
             add_key64_t<4>(_output, _key, (++round)>>2 );
-            if (r<=36) return; else if (round >= r) return;
+            if (round >= r) return;
          
-            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (r<=37) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (r<=38) return; else if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (r<=39) return; else if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
+            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
+            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
             double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
             add_key64_t<0>(_output, _key, (++round)>>2 );
-            //if (r<=40) return; else if (round >= r) return;
 
         }
 
