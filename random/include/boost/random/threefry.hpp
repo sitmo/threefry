@@ -26,7 +26,8 @@
 #include <boost/random/detail/seed.hpp>
 #include <boost/random/detail/seed_impl.hpp>
 
-#include <boost/utility/swap.hpp>
+#include <boost/mpl/at.hpp>
+#include <boost/mpl/vector_c.hpp>
 
 namespace boost {
 namespace random {
@@ -56,15 +57,78 @@ namespace random {
 namespace detail {
 
     static const uint_least64_t threefry4x64_tweak = 0x1BD11BDAA9FC1A22;
+
+    typedef boost::mpl::vector_c<boost::uint_least8_t, 14, 52, 23,  5, 25, 46, 58, 32> rot0_t;
+    typedef boost::mpl::vector_c<boost::uint_least8_t, 16, 57, 40, 37, 33, 12, 22, 32> rot1_t;
     
-    // primary template
+    // The mixing function
+    template <boost::uint_least8_t bits>
+    inline void mix64(boost::uint_least64_t& x0, boost::uint_least64_t& x1)
+    {
+        x0 += x1;
+        x1 = (x1 << bits) | (x1 >> (64-bits));
+        x1 ^= x0;
+    }
+
+
+    
+    // Default implementation of the optional key addition round: do nothing
+    template <std::size_t Shift, std::size_t Enable>
+    struct add_key_round_impl_t
+    {
+        static inline void execute( boost::uint_least64_t (&output)[4], boost::uint_least64_t (&key)[5]) {} 
+    };
+
+    // Specialisation of the key addition, when enabled add the key to the output
+    template <std::size_t Shift>
+    struct add_key_round_impl_t<Shift, true>
+    {
+        static inline void execute(boost::uint_least64_t (&output)[4], boost::uint_least64_t (&key)[5])
+        {
+            output[0] += key[ Shift   %5];
+            output[1] += key[(Shift+1)%5];
+            output[2] += key[(Shift+2)%5];
+            output[3] += key[(Shift+3)%5];
+            output[3] += Shift;
+        }
+    };
+
+    // key addition round: do it every 4th round
+    template <std::size_t Round>
+    struct add_key_round_t 
+        : add_key_round_impl_t<(Round+1)/4, (Round%4 == 3)> 
+    {};
+
+    
+    // Unroll the threefry loop
+    template <std::size_t Round, std::size_t Rounds>
+    struct unroll_threefry_loop_t
+    {
+        static inline void execute(boost::uint_least64_t (&output)[4], boost::uint_least64_t (&key)[5])
+        {
+            mix64< boost::mpl::at_c<rot0_t,Round%8>::type::value >(output[0], output[1+2*(Round%2)] );
+            mix64< boost::mpl::at_c<rot1_t,Round%8>::type::value >(output[2], output[3-2*(Round%2)] );
+            add_key_round_t<Round>::execute(output,key);
+            return unroll_threefry_loop_t<Round + 1,Rounds>::execute(output,key);
+        }
+    };
+    
+    // terminal condition of the threefry loop unrolling
+    template <std::size_t Rounds>
+    struct unroll_threefry_loop_t<Rounds,Rounds>
+    {
+        static inline void execute(boost::uint_least64_t (&output)[4], boost::uint_least64_t (&key)[5]) {};
+    };
+
+
+    // helper policy class 
     template< typename UIntType, std::size_t w>
     struct extract4x64_impl {
         inline static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n);
         inline static UIntType w_max();
     };
     
-    // specialisation
+    // helper policy class specialisations
     template< typename UIntType>
     struct extract4x64_impl<UIntType,64> {
         inline static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
@@ -352,117 +416,16 @@ public:
 
 
 private:
-    inline void rotl64(boost::uint_least64_t& v, const boost::uint8_t bits) const
-    { 
-        v = (v << bits) | (v >> (64-bits)); 
-    }
-    
-    inline void mix64(boost::uint_least64_t& x0, boost::uint64_t& x1, const boost::uint8_t bits) const
-    {
-        x0 += x1;
-        rotl64(x1, bits);
-        x1 ^= x0;
-    }
-
-    inline void double_mix64(   boost::uint_least64_t& x0, boost::uint_least64_t& x1, const boost::uint8_t rx,
-                                boost::uint_least64_t& z0, boost::uint_least64_t& z1, const boost::uint8_t rz) const
-    {
-        mix64(x0,x1,rx);
-        mix64(z0,z1,rz);
-    }
-
-    template <std::size_t offset>
-    inline void add_key64_t( boost::uint_least64_t (&output)[4], boost::uint_least64_t (&key)[5], const std::size_t c) const
-    {
-        output[0] += key[ offset   %5];
-        output[1] += key[(offset+1)%5];
-        output[2] += key[(offset+2)%5];
-        output[3] += key[(offset+3)%5];
-        output[3] += c;
-    }
 
     void encrypt_counter()
     {
         // copy the counter to output
         for (std::size_t i=0; i<4; ++i)
             _output[i] = _counter[i] + _key[i];
-
-        for (int round = 0; round < r;)
-        {
-            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
-            double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
-            add_key64_t<1>(_output, _key, (++round)>>2 );
-            if (round >= r) return;
-         
-            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
-            add_key64_t<2>(_output, _key, (++round)>>2 );
-            if (round >= r) return;
-
-            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
-            double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
-            add_key64_t<3>(_output, _key, (++round)>>2 );
-            if (round >= r) return;
-
-            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
-            add_key64_t<4>(_output, _key, (++round)>>2 );
-            if (round >= r) return;
-
-            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
-            double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
-            add_key64_t<0>(_output, _key, (++round)>>2 );
-            if (round >= r) return;
-         
-            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
-            add_key64_t<1>(_output, _key, (++round)>>2 );
-            if (round >= r) return;
-
-            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
-            double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
-            add_key64_t<2>(_output, _key, (++round)>>2 );
-            if (round >= r) return;
-         
-            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
-            add_key64_t<3>(_output, _key, (++round)>>2 );
-            if (round >= r) return;
-
-            double_mix64( _output[0], _output[1], 14, _output[2], _output[3], 16); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 52, _output[2], _output[1], 57); if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 23, _output[2], _output[3], 40); if (++round >= r) return;
-            double_mix64( _output[0], _output[3],  5, _output[2], _output[1], 37);
-            add_key64_t<4>(_output, _key, (++round)>>2 );
-            if (round >= r) return;
-         
-            double_mix64( _output[0], _output[1], 25, _output[2], _output[3], 33); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 46, _output[2], _output[1], 12); if (++round >= r) return;
-            double_mix64( _output[0], _output[1], 58, _output[2], _output[3], 22); if (++round >= r) return;
-            double_mix64( _output[0], _output[3], 32, _output[2], _output[1], 32);
-            add_key64_t<0>(_output, _key, (++round)>>2 );
-            if (round >= r) return;
-
-        }
-
+        
+        detail::unroll_threefry_loop_t<0,r>::execute(_output,_key);
     }
-    
+
     // increment the counter with 1
     void inc_counter()
     {
