@@ -353,6 +353,13 @@ int main(int argc, char*argv[])
   run(iter, "mt19937_64", boost::mt19937_64());
 #endif
 
+  run(iter, "threefry4x64_13", boost::random::threefry4x64_13());
+  run(iter, "threefry4x64_13_slow", boost::random::threefry4x64_13_slow());
+  run(iter, "threefry4x64_20", boost::random::threefry4x64_20());
+  run(iter, "threefry4x64_13_64", boost::random::threefry4x64_13_64());
+  run(iter, "threefry4x64_20_64", boost::random::threefry4x64_20_64());
+
+
   run(iter, "lagged_fibonacci607", boost::lagged_fibonacci607());
   run(iter, "lagged_fibonacci1279", boost::lagged_fibonacci1279());
   run(iter, "lagged_fibonacci2281", boost::lagged_fibonacci2281());
@@ -376,8 +383,6 @@ int main(int argc, char*argv[])
   run(iter, "ranlux24", boost::ranlux3());
   run(iter, "ranlux48", boost::ranlux4());
 
-  run(iter, "threefry4x64_20", boost::random::threefry4x64_20());
-  run(iter, "threefry4x64_20_64", boost::random::threefry4x64_20_64());
 
   run(iter, "counting", counting());
 
