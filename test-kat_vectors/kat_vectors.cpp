@@ -35,7 +35,9 @@ These test cases are taken from: https://github.com/girving/random123/blob/maste
 #include <ostream>
 
 #include <boost/test/included/unit_test.hpp>
-#include <boost/random/threefry.hpp>
+#include <boost/random/threefry4x64.hpp>
+//#include <boost/random/threefry.hpp>
+
 
 BOOST_AUTO_TEST_CASE( threefry4x64_13_8 )
 {
@@ -133,6 +135,7 @@ BOOST_AUTO_TEST_CASE( threefry4x64_13_64_0x00 )
     BOOST_CHECK_EQUAL( eng(), 0x397311b5b89f9d49 );
     BOOST_CHECK_EQUAL( eng(), 0xe21292c3258024bc );
 }
+
 
 BOOST_AUTO_TEST_CASE(  threefry4x64_13_64_0xff )
 {
@@ -259,4 +262,314 @@ BOOST_AUTO_TEST_CASE( threefry4x64_72_64_0x45 )
     BOOST_CHECK_EQUAL( eng(), 0xc9e99bd53f2e9173 );
     BOOST_CHECK_EQUAL( eng(), 0x43dad469dc825948 );
     BOOST_CHECK_EQUAL( eng(), 0xfbb19d06c8a2b4dc );
+}
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_key3 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng1;
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xbe5466cf34e90c6c << ' ' << 0x0000000000000000 << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0x082efa98ec4e6c89 << ' ' << 0;
+    std::istringstream is1( os1.str() );
+    is1 >> eng1;
+
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 3, 4> eng2;
+    std::ostringstream os2;
+    os2 << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xbe5466cf34e90c6c << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0x082efa98ec4e6c89 << ' ' << 0;
+    std::istringstream is2( os2.str() );
+    is2 >> eng2;
+
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+}
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_key2 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng1;
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0x082efa98ec4e6c89 << ' ' << 0;
+    std::istringstream is1( os1.str() );
+    is1 >> eng1;
+
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 2, 4> eng2;
+    std::ostringstream os2;
+    os2 << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0x082efa98ec4e6c89 << ' ' << 0;
+    std::istringstream is2( os2.str() );
+    is2 >> eng2;
+
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+}
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_key1 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng1;
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0x082efa98ec4e6c89 << ' ' << 0;
+    std::istringstream is1( os1.str() );
+    is1 >> eng1;
+
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 1, 4> eng2;
+    std::ostringstream os2;
+    os2 << 0x452821e638d01377 << ' ' 
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0x082efa98ec4e6c89 << ' ' << 0;
+    std::istringstream is2( os2.str() );
+    is2 >> eng2;
+
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+}
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_key0 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng1;
+    std::ostringstream os1;
+    os1 << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0x082efa98ec4e6c89 << ' ' << 0;
+    std::istringstream is1( os1.str() );
+    is1 >> eng1;
+
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 0, 4> eng2;
+    std::ostringstream os2;
+    os2 
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0x082efa98ec4e6c89 << ' ' << 0;
+    std::istringstream is2( os2.str() );
+    is2 >> eng2;
+
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+}
+
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_counter3 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng1;
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xc0ac29b7c97c50dd << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0x0000000000000000 << ' ' << 0;
+    std::istringstream is1( os1.str() );
+    is1 >> eng1;
+
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 4, 3> eng2;
+    std::ostringstream os2;
+    os2 << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xc0ac29b7c97c50dd << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0xa4093822299f31d0 << ' ' << 0;
+    std::istringstream is2( os2.str() );
+    is2 >> eng2;
+
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+}
+
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_counter2 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng1;
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xc0ac29b7c97c50dd << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' ' << 0;
+    std::istringstream is1( os1.str() );
+    is1 >> eng1;
+
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 4, 2> eng2;
+    std::ostringstream os2;
+    os2 << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xc0ac29b7c97c50dd << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x13198a2e03707344 << ' ' << 0;
+    std::istringstream is2( os2.str() );
+    is2 >> eng2;
+
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+}
+
+
+
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_counter1 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng1;
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xc0ac29b7c97c50dd << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' ' << 0;
+    std::istringstream is1( os1.str() );
+    is1 >> eng1;
+
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 4, 1> eng2;
+    std::ostringstream os2;
+    os2 << 0x452821e638d01377 << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xbe5466cf34e90c6c << ' ' << 0xc0ac29b7c97c50dd << ' '
+       << 0x243f6a8885a308d3  << ' ' << 0;
+    std::istringstream is2( os2.str() );
+    is2 >> eng2;
+
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+}
+
+
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_counter1_key1 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72> eng1;
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' '
+       << 0x243f6a8885a308d3 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' ' << 0x0000000000000000 << ' ' << 0;
+    std::istringstream is1( os1.str() );
+    is1 >> eng1;
+
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 1, 1> eng2;
+    std::ostringstream os2;
+    os2 << 0x452821e638d01377 << ' '
+       << 0x243f6a8885a308d3  << ' ' << 0;
+    std::istringstream is2( os2.str() );
+    is2 >> eng2;
+
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+}
+
+
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_counter1_test1 )
+{
+    boost::uint64_t k,c,s;
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 1, 1> eng;
+    
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0x0000000000000000  << ' ' << 0;      // key, counter, sub-counter
+    std::istringstream is1( os1.str() );
+    is1 >> eng;
+    
+    eng();
+    
+    std::ostringstream os2;
+    os2 << eng;
+    std::istringstream is2( os2.str() );
+    is2 >> k >> c >> s;
+    BOOST_CHECK_EQUAL( c, 0 );
+    BOOST_CHECK_EQUAL( s, 1 );
+}
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_counter1_test2 )
+{
+    boost::uint64_t k,c,s;
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 1, 1> eng;
+    
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0x0000000000000000  << ' ' << 4;      // key, counter, sub-counter
+    std::istringstream is1( os1.str() );
+    is1 >> eng;
+    
+    eng();
+    
+    std::ostringstream os2;
+    os2 << eng;
+    std::istringstream is2( os2.str() );
+    is2 >> k >> c >> s;
+    BOOST_CHECK_EQUAL( c, 1 );
+    BOOST_CHECK_EQUAL( s, 1 );
+}
+
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_counter1_test3 )
+{
+    boost::uint64_t k,c,s;
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 1, 1> eng;
+    
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0xFFFFFFFFFFFFFFFF  << ' ' << 4;      // key, counter, sub-counter
+    std::istringstream is1( os1.str() );
+    is1 >> eng;
+    
+    eng();
+    
+    std::ostringstream os2;
+    os2 << eng;
+    std::istringstream is2( os2.str() );
+    is2 >> k >> c >> s;
+    BOOST_CHECK_EQUAL( c, 0 );
+    BOOST_CHECK_EQUAL( s, 1 );
+}
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_counter2_test1 )
+{
+    boost::uint64_t k,c0,c1,s;
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 1, 2> eng;
+    
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0xFFFFFFFFFFFFFFFF << ' ' << 0x0  << ' ' << 4;
+    std::istringstream is1( os1.str() );
+    is1 >> eng;
+    
+    eng();
+    
+    std::ostringstream os2;
+    os2 << eng;
+    std::istringstream is2( os2.str() );
+    is2 >> k >> c0 >> c1  >> s;
+    BOOST_CHECK_EQUAL( c0, 0 );
+    BOOST_CHECK_EQUAL( c1, 1 );
+    BOOST_CHECK_EQUAL( s, 1 );
+}
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_counter2_test2 )
+{
+    boost::uint64_t k,c0,c1,s;
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 1, 2> eng;
+    
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0xFFFFFFFFFFFFFFFF << ' ' << 0xFFFFFFFFFFFFFFFF  << ' ' << 4;
+    std::istringstream is1( os1.str() );
+    is1 >> eng;
+    
+    eng();
+    
+    std::ostringstream os2;
+    os2 << eng;
+    std::istringstream is2( os2.str() );
+    is2 >> k >> c0 >> c1  >> s;
+    BOOST_CHECK_EQUAL( c0, 0 );
+    BOOST_CHECK_EQUAL( c1, 0 );
+    BOOST_CHECK_EQUAL( s, 1 );
+}
+
+
+BOOST_AUTO_TEST_CASE( threefry4x64_72_64_seed_test1 )
+{
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72,1 ,1> eng1;
+    std::ostringstream os1;
+    os1 << 0x452821e638d01377 << ' ' << 0  << ' ' << 0;
+    std::istringstream is1( os1.str() );
+    is1 >> eng1;
+
+    boost::random::threefry4x64_engine<boost::uint64_t, 64, 72, 1, 1> eng2;
+    std::ostringstream os2;
+    os2 << 0x0 << ' ' << 0  << ' ' << 0;
+    std::istringstream is2( os2.str() );
+    is2 >> eng2;
+
+    eng2.seed(0x452821e638d01377);
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
+    BOOST_CHECK_EQUAL( eng1(), eng2() );
 }

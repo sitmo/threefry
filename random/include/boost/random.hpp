@@ -47,7 +47,7 @@
 #include <boost/random/subtract_with_carry.hpp>
 #include <boost/random/taus88.hpp>
 #include <boost/random/xor_combine.hpp>
-#include <boost/random/threefry.hpp>
+#include <boost/random/threefry4x64.hpp>
 
 // misc
 #include <boost/random/generate_canonical.hpp>

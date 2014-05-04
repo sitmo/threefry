@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6) 
 find_package( Boost )
 
-include_directories("../random/include/" ${Boost_INCLUDE_DIRS} )
+include_directories("/Users/thijs/hithub/boost" ${Boost_INCLUDE_DIRS} )
 
 
 project (kat_vectors)
