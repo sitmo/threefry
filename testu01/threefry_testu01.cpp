@@ -14,15 +14,15 @@ extern "C"
 }
 
 
-#include <boost/random/threefry.hpp>
+#include <boost/random/threefry4x64.hpp>
 
-boost::threefry20 engine;
-uint64_t engine_function() { return engine(); }
+boost::random::threefry4x64_13 engine;
+uint32_t engine_function() { return engine(); }
 
 
 int main (void)
 {
-    char engine_name[] = "threefry20";
+    char engine_name[] = "threefry4x64_13";
 
     unif01_Gen *gen;
     gen = unif01_CreateExternGenBits(engine_name, engine_function);

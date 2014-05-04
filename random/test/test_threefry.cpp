@@ -10,10 +10,10 @@
  *
  */
 
-#include <boost/random/threefry.hpp>
+#include <boost/random/threefry4x64.hpp>
 #include <cmath>
 
-#define BOOST_RANDOM_URNG boost::random::threefry20_32
+#define BOOST_RANDOM_URNG boost::random::threefry4x64_13
 
 #define BOOST_RANDOM_SEED_WORDS 8
 
