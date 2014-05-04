@@ -196,7 +196,10 @@ public:
      */
     BOOST_RANDOM_DETAIL_SEED_SEQ_SEED(threefry4x64_engine, SeeqSeq, seq)
     {
-        detail::seed_array_int<64>(seq, _key);
+        boost::uint64_t tmp[KeySize];
+        detail::seed_array_int<64>(seq, tmp);
+        for (std::size_t i=0; i<KeySize; ++i) 
+            _key[i+1] = tmp[i];
         reset_after_key_change();
     }
 
@@ -210,7 +213,10 @@ public:
      */
     template<class It> void seed(It& first, It last)
     { 
-        detail::fill_array_int<64>(first, last, _key);
+        boost::uint64_t tmp[KeySize];
+        detail::fill_array_int<64>(first, last, tmp);
+        for (std::size_t i=0; i<KeySize; ++i) 
+            _key[i+1] = tmp[i];
         reset_after_key_change();
     }
     
