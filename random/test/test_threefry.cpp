@@ -15,13 +15,13 @@
 
 #define BOOST_RANDOM_URNG boost::random::threefry4x64_13
 
-#define BOOST_RANDOM_SEED_WORDS 8
+#define BOOST_RANDOM_SEED_WORDS 2 // the default engine has 1x a 64bit key: 2x 32 bits
 
-#define BOOST_RANDOM_VALIDATION_VALUE 0xF224AAB8U            // The 10000th consecutive invocation of a default-constructed object shall produce
-#define BOOST_RANDOM_SEED_SEQ_VALIDATION_VALUE 1412154127
-#define BOOST_RANDOM_ITERATOR_VALIDATION_VALUE 2337410464
+#define BOOST_RANDOM_VALIDATION_VALUE 0x8d7f035bU            // The 10000th consecutive invocation of a default-constructed object shall produce
+#define BOOST_RANDOM_SEED_SEQ_VALIDATION_VALUE 0x397317e1U
+#define BOOST_RANDOM_ITERATOR_VALIDATION_VALUE 0x5aed945cU
 
-#define BOOST_RANDOM_GENERATE_VALUES { 0xE6C85537U, 0x09218EBDU, 0x66D86105U, 0x55941F52U }
+#define BOOST_RANDOM_GENERATE_VALUES { 0xe1dc8e05U, 0x4071fabeU, 0x695c9c62U, 0x2ed3113U }
         
 #include "test_generator.ipp"
 

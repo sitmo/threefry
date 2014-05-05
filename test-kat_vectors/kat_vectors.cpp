@@ -17,7 +17,7 @@ These test cases are taken from: https://github.com/girving/random123/blob/maste
 # Ignoring endianness, these are the first few hexdigits of pi:
 # 243F6A88 85A308D3 13198A2E 03707344 A4093822 299F31D0 082EFA98 EC4E6C89 452821E6 38D01377 BE5466CF 34E90C6C C0AC29B7 C97C50DD 3F84D5B5 B5470917 9216D5D9 8979FB1BD
 #
-#nameNxW      R  CTR                                                                 KEY                                                                 EXPECTED
+#nameNxW      R  CTR                                                                 KEY                                                                 EXPECTED 
 #threefry4x64 13 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 0000000000000000 4071fabee1dc8e05 02ed3113695c9c62 397311b5b89f9d49 e21292c3258024bc
 #threefry4x64 13 ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff ffffffffffffffff 7eaed935479722b5 90994358c429f31c 496381083e07a75b 627ed0d746821121
 #threefry4x64 13 243f6a8885a308d3 13198a2e03707344 a4093822299f31d0 082efa98ec4e6c89 452821e638d01377 be5466cf34e90c6c c0ac29b7c97c50dd 3f84d5b5b5470917 4361288ef9c1900c 8717291521782833 0d19db18c20cf47e a0b41d63ac8581e5
@@ -36,7 +36,7 @@ These test cases are taken from: https://github.com/girving/random123/blob/maste
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/random/threefry4x64.hpp>
-//#include <boost/random/threefry.hpp>
+
 
 
 BOOST_AUTO_TEST_CASE( threefry4x64_13_8 )
