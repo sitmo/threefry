@@ -573,7 +573,6 @@ private:
  * 32 bit version of the 13 rounds threefry engine, 64 bit seed, 2^67 cycle length
  */
 typedef threefry4x64_engine<boost::uint32_t, 32, 13, 1, 1> threefry4x64_13;
-typedef threefry4x64_engine<boost::uint32_t, 32, 13, 4, 4> threefry4x64_13_slow;
 
 /**
  * 64 bit version of the 13 rounds threefry engine, 64 bit seed, 2^66 cycle length

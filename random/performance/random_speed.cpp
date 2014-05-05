@@ -354,7 +354,6 @@ int main(int argc, char*argv[])
 #endif
 
   run(iter, "threefry4x64_13", boost::random::threefry4x64_13());
-  run(iter, "threefry4x64_13_slow", boost::random::threefry4x64_13_slow());
   run(iter, "threefry4x64_20", boost::random::threefry4x64_20());
   run(iter, "threefry4x64_13_64", boost::random::threefry4x64_13_64());
   run(iter, "threefry4x64_20_64", boost::random::threefry4x64_20_64());
