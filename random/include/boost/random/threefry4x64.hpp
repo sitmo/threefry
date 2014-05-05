@@ -264,19 +264,23 @@ public:
     void discard(boost::uintmax_t z)
     {
         // check if we stay in the current block
-        if (z < samples_per_block - _o_counter) {
+        if (z <= samples_per_block - _o_counter) {
             _o_counter += static_cast<unsigned short>(z);
             return;
         }
 
-        // we will have to generate a new block...
-        z -= (samples_per_block - _o_counter);  // discard the remainder of the current blok
-        _o_counter = z % samples_per_block;     // set the pointer in the correct element in the new block
-        z -= _o_counter;                        // update z
-        z /= samples_per_block;                 // the number of 256 bit bocks to skip is z/samples_per_block
-        ++z;                                    // and one more because we crossed the buffer line
+        _o_counter += (z % samples_per_block);
+         z /= samples_per_block;
+         
+         if (_o_counter > samples_per_block) {
+            _o_counter -= samples_per_block;
+            ++z;
+         }
+         
         inc_counter(z);
-        encrypt_counter();
+        
+        if (_o_counter != samples_per_block)
+            encrypt_counter();
     }
 
 #ifndef BOOST_RANDOM_NO_STREAM_OPERATORS
