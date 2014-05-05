@@ -1,6 +1,6 @@
-# ThreeFry Random Engine #
+# ThreeFry4x64 Random Engine #
 
-The threefry random engine is a counter based random engine that uses a stripped-down 
+The threefry4x64 random engine is a counter based random engine that uses a stripped-down 
 Threefish cryptographic function that is optimised for speed. It's main freatures are:
 
 * speed: the engine is as fast as mersenne twister
