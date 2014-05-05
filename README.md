@@ -3,29 +3,35 @@
 The threefry random engine is a counter based random engine that uses a stripped-down 
 Threefish cryptographic function that is optimised for speed. It's main freatures are:
 
-* speed: the pre-defined versions of the the engine range is speed from 6.6 to 14.7 CPU cycles
-* quality: the random quality acording to the BigCrush test is highest if you compared is 
-with current engines
-* It has a 256 bit seed, and engines with different seeds have a guarantee to have non-
-overlapping streams of length 2^258
+* speed: the engine is as fast as mersenne twister
+* quality: the random quality acording to the BigCrush test is highest if you compared is with current engines
+*  parallel guarantees: engines with different seeds have a guarantee to have non- overlapping streams. 
 * O(1) discard. Besides seeding, discarding is also a common strategy for generate non-
 overlapping streams for parallel processing.
-* small footprint, the engines uses 13x a 64 bit integers for its state and internal cache. 
+* small footprint, the engines uses 5..13x a 64 bit integers for its state and internal cache. 
 
 ## Overview ##
 
+|engine  | return type|random bits | rounds | key (bytes) | counter (bytes) | memory (bytes) | Cycle length | Seeds |
+|-----|---|--------|---|----------|-----------------|----------------|--------------|---:|
+|threefry4x64_13      |uint32_t|32|  13| 8| 8|48 | 2^67 | 2^64 
+|threefry4x64_13_64   |uint64_t|64|  13| 8| 8|48 | 2^66 | 2^64 
+|threefry4x64_20      |uint32_t|32|  20| 8| 8|48 | 2^67 | 2^64 
+|threefry4x64_20_64   |uint64_t|64|  20| 8| 8|48 | 2^66 | 2^64 
+|threefry4x64_engine<T,B,R,K,C> |T|B={8,16,32,64}|R>=1 |8\*K, K={0..4} |C\*8, C={1..4}| 32+(K+C)\*8 | 2^{64* C+2} | 2^{K* 64} 
+
+
 Threefish is a symmetric-key block cipher that can be used to encrypt and  decrypt messages 
 using a secret key. Counter based random engines (like this threefry engine) use this 
-encryption to encrypt a simple counter -in this case a 256 bit integer-. The encrypted 
+encryption to encrypt a simple counter -in this case a C\*64 bit integer-. The encrypted 
 output message in then used as a pool of pseudo-random bits. The main idea is that the 
 encrypted message looks like pure random bits, and that that will be the case for anything 
 you encrypt -either a text message or more convenient a large number-.
 
-The threefry random engine uses a 256 bit integer counter and a 256 bit key to generate a 
-256 bit encrypted message.
+The threefry random engine uses a C\*64 bit integer counter and a K\*64 bit key to generate a 256 bit encrypted message.
 
 Encrypting the counter with the key gives a 256 bit encrypted message which is uses to 
-construct 32 of 64 bit random integers. After all 256 bits are consumed the internal 
+construct 8,16,32 of 64 bit random integers. After all 256 bits are consumed the internal 
 counter is incremented and  encrypted again to generate a new encrypted message.  Small 
 changes in the counter -or the key- result in big changes the encrypted output messages.
 
@@ -95,15 +101,14 @@ The speed was tested using the boost random/performance/random_speed.cpp program
 
 |engine        | speed                                |
 |--------------|--------------------------------------|
-|minstd_rand   |5.0480 nsec/loop = 9.43976 CPU cycles |
-|mt11213b      |4.2003 nsec/loop = 7.85456 CPU cycles |
-|mt19937       |5.2613 nsec/loop = 9.83863 CPU cycles |
-|mt19937_64    |4.3143 nsec/loop = 8.06774 CPU cycles |
-|threefry13    |3.5299 nsec/loop = 6.60091 CPU cycles |
-|threefry20    |4.7259 nsec/loop = 8.83743 CPU cycles |
-|threefry13_64 |5.5872 nsec/loop = 10.4481 CPU cycles |
-|threefry20_64 |7.8694 nsec/loop = 14.7158 CPU cycles |
-
+|minstd_rand   | 4.8031 nsec/loop = 8.9818 CPU cycles
+|mt11213b      | 4.1501 nsec/loop = 7.76069 CPU cycles
+|mt19937       | 5.7962 nsec/loop = 10.8389 CPU cycles
+|mt19937_64    | 4.2335 nsec/loop = 7.91664 CPU cycles
+|threefry13    | 3.6672 nsec/loop = 6.85766 CPU cycles
+|threefry20    | 5.2351 nsec/loop = 9.78964 CPU cycles
+|threefry13_64 | 5.1499 nsec/loop = 9.63031 CPU cycles
+|threefry20_64 | 8.3034 nsec/loop = 15.5274 CPU cycles
 ## References ##
 
 The algorithm is described in "Parallel random numbers: as easy as 1, 2, 3"
