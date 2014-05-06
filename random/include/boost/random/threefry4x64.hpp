@@ -10,8 +10,8 @@
  * $Id$
  */
 
-#ifndef BOOST_RANDOM_THREEFRY_HPP
-#define BOOST_RANDOM_THREEFRY_HPP
+#ifndef BOOST_RANDOM_THREEFRY4X64_HPP
+#define BOOST_RANDOM_THREEFRY4X64_HPP
 
 #include <istream>
 #include <algorithm>
