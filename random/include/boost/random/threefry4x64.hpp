@@ -66,7 +66,7 @@ namespace detail {
         inline static UIntType zth(const boost::uint_least64_t (&_output)[4])
             { return _output[0] & 0xFFFF; }
         inline static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
-            { return (_output[n>>2] >> ((n&11)<<4)) & 0xFFFF; }
+            { return (_output[n>>2] >> ((n&3)<<4)) & 0xFFFF; }
         inline static UIntType w_max()
             { return 0xFFFF; }
     };
@@ -75,7 +75,7 @@ namespace detail {
         inline static UIntType zth(const boost::uint_least64_t (&_output)[4])
             { return _output[0] & 0xFF; }
         inline static UIntType nth(const boost::uint_least64_t (&_output)[4], std::size_t n)
-            { return (_output[n>>3] >> ((n&111)<<3)) & 0xFF; }
+            { return (_output[n>>3] >> ((n&7)<<3)) & 0xFF; }
         inline static UIntType w_max()
             { return 0xFF; }
     };
